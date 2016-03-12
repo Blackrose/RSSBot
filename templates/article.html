@@ -1,15 +1,22 @@
 <html>
     <head>
-        <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+        <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href={{ static_url("css/style.css") }} media="screen" type="text/css" />
     </head>
     <body>
         {% autoescape None %}
-            {% module sidebar() %}
-            {% module feeds() %}
-            <div id="title">
-                {{feed_item[0][4]}}
+        <div id="main-container"> <!-- Main Container -->
+            <div id="sidebar">
+                {% module sidebar() %}
             </div>
-            <div id="content">{{ content }}
+            <div id="article">
+                <h1>{{feed_item[0][4]}}</h1>
+                <span><a href={{feed_item[0][2]}}>{{feed_item[0][2]}}</a> {{feed_item[0][3]}}</span>
+                {{content}}
             </div>
+
+        </div> <!-- Main Container END -->
+        <script src="http://codepen.io/assets/libs/fullpage/jquery.js"></script>
+        <script src={{ static_url("js/index.js")}}></script>
     </body>
 </html>

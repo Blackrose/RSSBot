@@ -29,7 +29,8 @@ class ArticleHandler(tornado.web.RequestHandler):
 class SidebarModule(tornado.web.UIModule):
     def render(self):
         category = db_exec("select * from category")
-        return self.render_string("sidebar.html", category_list=category)
+        feeds_list = db_exec("select * from feeds")
+        return self.render_string("sidebar.html", category_list=category, feeds=feeds_list)
 
 class FeedsModule(tornado.web.UIModule):
     def render(self):
@@ -63,6 +64,7 @@ if __name__ == "__main__":
     app = tornado.web.Application(handlers=[(r"/", IndexHandler),
         (r"/article", ArticleHandler)], 
             template_path=os.path.join(os.path.dirname(__file__), "templates"), 
+            static_path=os.path.join(os.path.dirname(__file__), "templates/static"), 
             ui_modules={"sidebar":SidebarModule,
                 "feeds":FeedsModule,
                 "items_list":ItemslistModule}, debug=True)
