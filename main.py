@@ -7,7 +7,12 @@ import HTMLParser
 import os.path
 import sqlite3
 
-pointer=None
+import db_ops
+import feedfetcher
+
+import time
+import threading
+from multiprocessing import Process
 
 from tornado.options import define, options
 define("port", default=8000, help="run on the given port", type=int)
@@ -16,50 +21,54 @@ class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         #category = db_exec("select * from category")
         #self.render("index.html", category_list=category)
-        feeds_list = db_exec("select * from items")
-        self.render("index.html", )
+        feeds_list = db_ops.db_exec("select * from items")
+        self.render("index.html")
 
 class ArticleHandler(tornado.web.RequestHandler):
     def get(self):
         feedid = int(self.get_argument('feedid'))
-        feed = db_exec("select * from items where itemid=%d" % feedid )
+        feed = db_ops.db_exec("select * from items where itemid=%d" % feedid )
         content = feed[0][6]
         self.render("article.html", feed_item=feed, content=content)
 
 class SidebarModule(tornado.web.UIModule):
     def render(self):
-        category = db_exec("select * from category")
-        feeds_list = db_exec("select * from feeds")
+        category = db_ops.db_exec("select * from category")
+        feeds_list = db_ops.db_exec("select * from feeds")
         return self.render_string("sidebar.html", category_list=category, feeds=feeds_list)
 
 class FeedsModule(tornado.web.UIModule):
     def render(self):
-        feeds_list = db_exec("select * from feeds")
+        feeds_list = db_ops.db_exec("select * from feeds")
         return self.render_string("feeds.html", feeds=feeds_list)
 
 class ItemslistModule(tornado.web.UIModule):
     def render(self):
-        items_all = db_exec("select * from items")
+        items_all = db_ops.db_exec("select * from items")
         return self.render_string("items_list.html", items_list=items_all)
 
+def run_proc():
+    db_ops.db_init()
+    feed_urls = db_ops.db_exec("select feedurl from feeds")
+    for url in feed_urls:
+        print "Updating %s" % url
+        fetch = feedfetcher.FeedFetcher(url)
+        fetch.parse_items()
 
+def update_items():
+    p = Process(target=run_proc, args=())
+    p.start()
+    p.join()
 
-def db_init():
-    con = sqlite3.connect('data.sqlite')
-    pointer = con.cursor()
-    return pointer
-
-def db_exec(query_str):
-    global pointer
-    #pointer.execute("select * from feeds")
-    pointer.execute(query_str)
-    #print pointer.fetchall()
-    return pointer.fetchall()
+    global timer
+    timer = threading.Timer(200, update_items)
+    timer.start()
 
 
 if __name__ == "__main__":
-    global pointer
-    pointer = db_init()
+    db_ops.db_init()
+    timer = threading.Timer(200, update_items)
+    timer.start()
     tornado.options.parse_command_line()
     app = tornado.web.Application(handlers=[(r"/", IndexHandler),
         (r"/article", ArticleHandler)], 
