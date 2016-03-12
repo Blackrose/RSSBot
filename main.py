@@ -1,0 +1,72 @@
+import tornado.httpserver
+import tornado.ioloop
+import tornado.options
+import tornado.web
+import HTMLParser
+
+import os.path
+import sqlite3
+
+pointer=None
+
+from tornado.options import define, options
+define("port", default=8000, help="run on the given port", type=int)
+
+class IndexHandler(tornado.web.RequestHandler):
+    def get(self):
+        #category = db_exec("select * from category")
+        #self.render("index.html", category_list=category)
+        feeds_list = db_exec("select * from items")
+        self.render("index.html", )
+
+class ArticleHandler(tornado.web.RequestHandler):
+    def get(self):
+        feedid = int(self.get_argument('feedid'))
+        feed = db_exec("select * from items where itemid=%d" % feedid )
+        content = feed[0][6]
+        self.render("article.html", feed_item=feed, content=content)
+
+class SidebarModule(tornado.web.UIModule):
+    def render(self):
+        category = db_exec("select * from category")
+        return self.render_string("sidebar.html", category_list=category)
+
+class FeedsModule(tornado.web.UIModule):
+    def render(self):
+        feeds_list = db_exec("select * from feeds")
+        return self.render_string("feeds.html", feeds=feeds_list)
+
+class ItemslistModule(tornado.web.UIModule):
+    def render(self):
+        items_all = db_exec("select * from items")
+        return self.render_string("items_list.html", items_list=items_all)
+
+
+
+def db_init():
+    con = sqlite3.connect('data.sqlite')
+    pointer = con.cursor()
+    return pointer
+
+def db_exec(query_str):
+    global pointer
+    #pointer.execute("select * from feeds")
+    pointer.execute(query_str)
+    #print pointer.fetchall()
+    return pointer.fetchall()
+
+
+if __name__ == "__main__":
+    global pointer
+    pointer = db_init()
+    tornado.options.parse_command_line()
+    app = tornado.web.Application(handlers=[(r"/", IndexHandler),
+        (r"/article", ArticleHandler)], 
+            template_path=os.path.join(os.path.dirname(__file__), "templates"), 
+            ui_modules={"sidebar":SidebarModule,
+                "feeds":FeedsModule,
+                "items_list":ItemslistModule}, debug=True)
+    http_server = tornado.httpserver.HTTPServer(app)
+    http_server.listen(options.port)
+    tornado.ioloop.IOLoop.instance().start()
+

@@ -1,0 +1,8 @@
+{% module items_list %}
+<div>
+    {% for item in items_list %}
+    <div style="border-style: solid;">
+        <a href="article?feedid={{item[0]}}">{{item[4]}}</a>
+    </div>
+    {% end %}
+</div>

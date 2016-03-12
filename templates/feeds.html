@@ -1,0 +1,8 @@
+{% module feeds %}
+<div id="feeds">
+    {% for feed in feeds %}
+    <div style="border-style: solid;border-color: blue;">
+        <a href={{feed[3]}}>{{feed[1]}} {{ feed[2] }}</a>
+    </div>
+    {% end %}
+</div>
