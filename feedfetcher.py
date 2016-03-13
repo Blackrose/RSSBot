@@ -15,27 +15,38 @@ class FeedFetcher:
         query_str = "select itemid from items where title=%s"
         for entry in self.result.entries:
 
-            weburl = self.result.feed.id
+            #print entry
             title = entry.title
             print title
             url = entry.link
-            snippet = entry.get('summary')
-            content = entry.get('content')
+            snippet = entry.get('summary', entry.get('description'))
+            content = entry.get('content', entry.get('description'))
             publish_date = to_time(entry.get('published_parsed', entry.get('updated_parsed')))
             guid = hashlib.md5((title + url).encode('utf-8')).hexdigest()
-
-            result = db_ops.db_exec("select feedid from feeds where sourceurl='%s'" % weburl)
-            if(result):
-                self.feedid = result[0][0]
             
-            result = db_ops.db_exec("select itemid from items where title='%s'" % title)
-            if(not result):
-                value = (self.feedid, url, publish_date, title, snippet, content[0]['value'], False, False, guid)
+            if(isinstance(content, list)):
+                content = content[0]['value']
+            if(isinstance(snippet, list)):
+                snippet = snippet[0]['value']
+
+            result = db_ops.db_exec("select feedid from feeds where feedurl='%s'" % self.feedurl)
+            if(result):
+                print "found the feedid %d" % result[0][0]
+                self.feedid = result[0][0]
+            else:
+                print "This is new feedurl, need add to feeds table"
+           
+            print "select itemid from items where title=%s" % title
+            result = db_ops.db_exec("select itemid from items where url='%s'" % url)
+            print result
+            if(len(result) == 0):
+                value = (self.feedid, url, publish_date, title, snippet, content, False, False, guid)
                 result = db_ops.db_insert("insert into items " + 
                         "(feedid, url, pubdate, title, snippet, content, readed, star, guid) " + 
                         "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", value)
-                print result
-            
+                print "adding to sqlite"
+            else:
+                print "the article has already added!"
 
 
 def to_time(time_tuple):
@@ -44,5 +55,9 @@ def to_time(time_tuple):
 
 if __name__ == "__main__":
     db_ops.db_init()
-    fetch = FeedFetcher("http://blog.devtang.com/atom.xml")
-    fetch.parse_items()
+    feed_urls = db_ops.db_exec("select feedurl from feeds")
+    for url in feed_urls:
+        print url
+        #fetch = FeedFetcher("http://www.36kr.com/feed")
+        fetch = FeedFetcher(url[0])
+        fetch.parse_items()

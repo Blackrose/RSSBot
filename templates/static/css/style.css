@@ -8,7 +8,7 @@
 
 body {
 	font-family: 'Open Sans', Arial, Helvetica, Sans-serif, Verdana, Tahoma;
-    background: #AADDAA;
+    background: #BDC3C7;
 }
 
 ul {
@@ -139,13 +139,10 @@ h1 a {
     max-width: 60%;
  }
 
- #item-box{
-     margin-top: 10px;
-     margin-bottom: 10px;
-     transition: width 2s;
-     -webkit-transition:width 2s;
+ #article img{
+    max-width: 100%;
  }
 
  #item-box:hover{
-     background: green;
+     background: #1ABC9C;
  }

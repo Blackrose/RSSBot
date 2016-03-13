@@ -29,6 +29,7 @@ class ArticleHandler(tornado.web.RequestHandler):
         feedid = int(self.get_argument('feedid'))
         feed = db_ops.db_exec("select * from items where itemid=%d" % feedid )
         content = feed[0][6]
+        #print content
         self.render("article.html", feed_item=feed, content=content)
 
 class SidebarModule(tornado.web.UIModule):
@@ -44,7 +45,7 @@ class FeedsModule(tornado.web.UIModule):
 
 class ItemslistModule(tornado.web.UIModule):
     def render(self):
-        items_all = db_ops.db_exec("select * from items")
+        items_all = db_ops.db_exec("select * from items order by pubdate desc")
         return self.render_string("items_list.html", items_list=items_all)
 
 def run_proc():
@@ -67,8 +68,8 @@ def update_items():
 
 if __name__ == "__main__":
     db_ops.db_init()
-    timer = threading.Timer(200, update_items)
-    timer.start()
+    #timer = threading.Timer(200, update_items)
+    #timer.start()
     tornado.options.parse_command_line()
     app = tornado.web.Application(handlers=[(r"/", IndexHandler),
         (r"/article", ArticleHandler)], 

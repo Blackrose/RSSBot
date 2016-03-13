@@ -3,13 +3,15 @@
     <head>
         <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
         <link rel="stylesheet" href={{ static_url("css/style.css") }} media="screen" type="text/css" />
+        <link href="http://cdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+        <script src="http://cdn.bootcss.com/bootstrap/3.3.6/js/bootstrap.js"></script>
     </head>
     <body>
-        <div id="main-container"> <!-- Main Container -->
-            <div id="sidebar">
+        <div id="main-container" class="container-fluid"> <!-- Main Container -->
+            <div id="sidebar" class=".col-md-4">
                 {% module sidebar() %}
             </div>
-            <div id="content">
+            <div id="content" class=".col-md-8">
                 {% module items_list() %}
             </div>
         </div> <!-- Main Container END -->

@@ -8,10 +8,11 @@
         <ul class="submenu">
         {% for feed in feeds %}
         {% if feed[1] == category[0] %}
-            <li><a href="{{feed[1]}}">{{feed[2]}}</a></li>
+            <li><a href="{{feed[4]}}">{{feed[2]}}</a></li>
         {% end %}
         {% end %}
         </ul>
+
     </li>
     {% end %}
 </ul>
