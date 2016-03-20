@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import tornado.httpserver
 import tornado.ioloop
 import tornado.options
@@ -9,6 +10,7 @@ import sqlite3
 
 import db_ops
 import feedfetcher
+import feed
 
 import time
 import threading
@@ -23,6 +25,14 @@ class IndexHandler(tornado.web.RequestHandler):
         #self.render("index.html", category_list=category)
         feeds_list = db_ops.db_exec("select * from items")
         self.render("index.html")
+class AddFeedHandler(tornado.web.RequestHandler):
+    def post(self):
+        source_url = self.get_body_argument('sourceurl')
+        category_id = int(self.get_body_argument('category'))
+        print "%r" %source_url
+        print "%r" %category_id
+        self.redirect("/")
+        feed.parser_url(source_url, category_id)
 
 class ArticleHandler(tornado.web.RequestHandler):
     def get(self):
@@ -72,7 +82,8 @@ if __name__ == "__main__":
     #timer.start()
     tornado.options.parse_command_line()
     app = tornado.web.Application(handlers=[(r"/", IndexHandler),
-        (r"/article", ArticleHandler)], 
+        (r"/article", ArticleHandler),
+        (r"/add_feed", AddFeedHandler)], 
             template_path=os.path.join(os.path.dirname(__file__), "templates"), 
             static_path=os.path.join(os.path.dirname(__file__), "templates/static"), 
             ui_modules={"sidebar":SidebarModule,
